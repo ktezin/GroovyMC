@@ -1,0 +1,23 @@
+name: GroovyMC
+version: '${project.version}'
+main: me.groovymc.GroovyMCPlugin
+api-version: 1.21
+description: Groovy based paper spigot scripting plugin
+authors: [iKaganT]
+website: ktezin.github.io
+
+libraries:
+  - org.codehaus.groovy:groovy:3.0.25
+
+commands:
+  groovymc:
+    description: Main module management command
+    usage: /groovymc <load|unload|reload|list> [module]
+    permission: groovymc.admin
+    permission-message: §cYou have no permission to use this command!
+    aliases: [gmc, groovymc, groomc]
+
+permissions:
+  groovymc.admin:
+    description: Permission to use GroovyMC module management commands.
+    default: op
