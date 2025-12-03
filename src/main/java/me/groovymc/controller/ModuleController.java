@@ -15,16 +15,14 @@ import java.util.Map;
 
 public class ModuleController {
     private final JavaPlugin plugin;
-    private final MessageView view;
     private final CommandRegistry commandRegistry;
 
     private final Map<String, ScriptModule> modules = new HashMap<>();
     private final Map<String, Long> fileTimestamps = new HashMap<>();
     private final File modulesFolder;
 
-    public ModuleController(JavaPlugin plugin, MessageView view) {
+    public ModuleController(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.view = view;
 
         this.commandRegistry = new CommandRegistry(plugin);
         this.modulesFolder = new File(plugin.getDataFolder(), "modules");
@@ -56,7 +54,7 @@ public class ModuleController {
                     else {
                         Long lastKnown = fileTimestamps.get(name);
                         if (lastKnown == null || currentModified > lastKnown) {
-                            view.log("Changes detected: " + name + ", module reloading...");
+                            MessageView.log("Changes detected: " + name + ", module reloading...");
                             reloadModule(name);
                             fileTimestamps.put(name, currentModified);
                         }
@@ -111,10 +109,9 @@ public class ModuleController {
 
             module.setScriptInstance(script);
             modules.put(name, module);
-            view.log("Module loaded: " + name);
-
+            MessageView.log("Module loaded: " + name);
         } catch (Exception e) {
-            view.logError("An error occured while loading module: " + name, e);
+            MessageView.logError("An error occured while loading module: " + name, e);
         }
     }
 

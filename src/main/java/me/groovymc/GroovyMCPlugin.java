@@ -1,6 +1,7 @@
 package me.groovymc;
 
 import me.groovymc.controller.ModuleController;
+import me.groovymc.db.DatabaseManager;
 import me.groovymc.view.MessageView;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,27 +10,25 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
 
+    public static DatabaseManager dbManager;
     private ModuleController controller;
-    private MessageView view;
 
     @Override
     public void onEnable() {
-        // MVC Bileşenlerini Başlat
-        this.view = new MessageView(this);
-        this.controller = new ModuleController(this, view);
+        MessageView.init(this);
 
-        // Komutu kaydet
+        dbManager = new DatabaseManager(this);
+        this.controller = new ModuleController(this);
+
         getCommand("groovymc").setExecutor(this);
 
-        // Modülleri yükle
         controller.loadAll();
     }
 
     @Override
     public void onDisable() {
-        if (controller != null) {
-            controller.unloadAll();
-        }
+        if (controller != null) controller.unloadAll();
+        if (dbManager != null) dbManager.close();
     }
 
     @Override
@@ -37,7 +36,7 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
         if (!sender.hasPermission("groovymc.admin")) return true;
 
         if (args.length == 0) {
-            view.send(sender, "&eUsage: /groovymc <load|unload|reload|list> [module]");
+            MessageView.send(sender, "&eUsage: /groovymc <load|unload|reload|list> [module]");
             return true;
         }
 
@@ -46,17 +45,17 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
 
         switch (action) {
             case "list":
-                view.sendSuccess(sender, "Active modules:");
-                controller.getModules().keySet().forEach(k -> view.send(sender, " - " + k));
+                MessageView.sendSuccess(sender, "Active modules:");
+                controller.getModules().keySet().forEach(k -> MessageView.send(sender, " - " + k));
                 break;
             case "reload":
                 if (moduleName != null) {
                     controller.reloadModule(moduleName);
-                    view.sendSuccess(sender, moduleName + " reloaded.");
+                    MessageView.sendSuccess(sender, moduleName + " reloaded.");
                 } else {
                     controller.unloadAll();
                     controller.loadAll();
-                    view.sendSuccess(sender, "All modules reloaded.");
+                    MessageView.sendSuccess(sender, "All modules reloaded.");
                 }
                 break;
             case "load":

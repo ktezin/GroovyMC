@@ -8,6 +8,9 @@ website: ktezin.github.io
 
 libraries:
   - org.codehaus.groovy:groovy:3.0.25
+  - org.codehaus.groovy:groovy-sql:3.0.25
+  - com.zaxxer:HikariCP:5.1.0
+  - org.xerial:sqlite-jdbc:3.45.1.0
 
 commands:
   groovymc:

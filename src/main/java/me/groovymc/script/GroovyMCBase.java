@@ -1,12 +1,16 @@
 package me.groovymc.script;
 
 import groovy.lang.GroovyShell;
+import groovy.sql.Sql;
+import me.groovymc.GroovyMCPlugin;
 import me.groovymc.controller.CommandRegistry;
+import me.groovymc.db.FluentDatabase;
 import me.groovymc.model.ScriptModule;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 import me.groovymc.model.SimpleSidebar;
 import me.groovymc.util.ChatUtils;
+import me.groovymc.view.MessageView;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -39,35 +43,24 @@ public abstract class GroovyMCBase extends Script {
     }
 
     public void include(String path) {
-        // 1. Dosyayı bul (Alt klasör destekler)
         File scriptFile = new File(module.getModuleFolder(), path);
 
         if (!scriptFile.exists()) {
-            log("&c[Hata] Dosya bulunamadı: " + path);
+            MessageView.logError("Script file not found: " + path);
             return;
         }
 
         try {
-            // 2. Ayarları Kopyala (Aynı Base Class)
             CompilerConfiguration config = new CompilerConfiguration();
             config.setScriptBaseClass(GroovyMCBase.class.getName());
 
-            // 3. AYNI BINDING'i Kullan (Sihir burada!)
-            // 'getBinding()' mevcut scriptin hafızasıdır. Bunu yeni scripte verirsek
-            // değişkenleri paylaşırlar.
             GroovyShell shell = new GroovyShell(plugin.getClass().getClassLoader(), this.getBinding(), config);
-
-            // 4. Parse et
             GroovyMCBase childScript = (GroovyMCBase) shell.parse(scriptFile);
-
-            // 5. Bağımlılıkları aktar (Komut, Event sistemleri çalışsın diye)
             childScript.init(plugin, module, commandRegistry);
-
-            // 6. Çalıştır (Dosyadaki kodlar işlensin)
             childScript.run();
 
         } catch (Exception e) {
-            log("&c[Hata] " + path + " yüklenirken sorun oluştu!");
+            MessageView.logError("An error occoured when loading " + path );
             e.printStackTrace();
         }
     }
@@ -95,9 +88,8 @@ public abstract class GroovyMCBase extends Script {
     public <T extends Event> void onEvent(Class<T> eventClass, Closure action) {
         Listener listener = new Listener() {};
         EventExecutor executor = (l, e) -> {
-            // "isInstance" kontrolü ile güvenli cast
             if (eventClass.isInstance(e)) {
-                action.call(e); // Event objesini Closure'a parametre olarak gönder
+                action.call(e);
             }
         };
 
@@ -164,5 +156,13 @@ public abstract class GroovyMCBase extends Script {
             activeBoards.get(player.getName()).delete();
             activeBoards.remove(player.getName());
         }
+    }
+
+    public void async(Closure action) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> action.call());
+    }
+
+    public FluentDatabase getDb() {
+        return new FluentDatabase(new Sql(GroovyMCPlugin.dbManager.getDataSource()), module.getName());
     }
 }

@@ -1,36 +1,51 @@
 package me.groovymc.view;
 
-import org.bukkit.ChatColor;
+import me.groovymc.util.ChatUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;
 
 public class MessageView {
-    private final JavaPlugin plugin;
-    private final String PREFIX = ChatColor.GRAY + "[" + ChatColor.GOLD + "GroovyMC" + ChatColor.GRAY + "] ";
+    private static JavaPlugin plugin;
+    private static final String PREFIX = ChatUtils.color("&8[&6GroovyMC&8] ");
 
-    public MessageView(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public static void init(JavaPlugin pl) {
+        plugin = pl;
     }
 
-    public void log(String message) {
-        plugin.getLogger().info(ChatColor.stripColor(message));
+    public static void log(String message) {
+        if (plugin != null) {
+            plugin.getLogger().info(ChatUtils.color(message));
+        }
     }
 
-    public void logError(String message, Exception e) {
-        plugin.getLogger().log(Level.SEVERE, message, e);
+    public static void logError(String message) {
+        if (plugin != null) {
+            plugin.getLogger().log(Level.SEVERE, message);
+        }
     }
 
-    public void send(CommandSender sender, String message) {
-        sender.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', message));
+    public static void logError(String message, Exception e) {
+        if (plugin != null) {
+            plugin.getLogger().log(Level.SEVERE, message, e);
+        }
     }
 
-    public void sendSuccess(CommandSender sender, String message) {
-        send(sender, ChatColor.GREEN + message);
+    public static void send(CommandSender sender, String message) {
+        sender.sendMessage(PREFIX + ChatUtils.color(message));
     }
 
-    public void sendError(CommandSender sender, String message) {
-        send(sender, ChatColor.RED + message);
+    public static void sendSuccess(CommandSender sender, String message) {
+        send(sender, "&a" + message);
+    }
+
+    public static void sendError(CommandSender sender, String message) {
+        send(sender, "&c" + message);
+    }
+
+    public static void broadcast(String message) {
+        Bukkit.broadcastMessage(PREFIX + ChatUtils.color(message));
     }
 }
