@@ -5,6 +5,7 @@ import groovy.sql.Sql;
 import me.groovymc.GroovyMCPlugin;
 import me.groovymc.controller.CommandRegistry;
 import me.groovymc.db.FluentDatabase;
+import me.groovymc.model.GuiHolder;
 import me.groovymc.model.ScriptModule;
 import groovy.lang.Closure;
 import groovy.lang.Script;
@@ -12,12 +13,16 @@ import me.groovymc.model.SimpleSidebar;
 import me.groovymc.util.ChatUtils;
 import me.groovymc.view.MessageView;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -25,6 +30,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class GroovyMCBase extends Script {
@@ -162,7 +168,76 @@ public abstract class GroovyMCBase extends Script {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> action.call());
     }
 
+    public void sync(Closure action) {
+        if (Bukkit.isPrimaryThread()) {
+            action.call();
+        } else {
+            Bukkit.getScheduler().runTask(plugin, () -> action.call());
+        }
+    }
+
     public FluentDatabase getDb() {
         return new FluentDatabase(new Sql(GroovyMCPlugin.dbManager.getDataSource()), module.getName());
+    }
+
+    public void gui(Player player, String title, int rows, Closure setup) {
+        GuiHolder holder = new GuiHolder();
+
+        Inventory inv = Bukkit.createInventory(holder, rows * 9, ChatUtils.color(title));
+        holder.setInventory(inv);
+
+        GuiBuilder builder = new GuiBuilder(inv, holder);
+
+        setup.setDelegate(builder);
+        setup.setResolveStrategy(Closure.DELEGATE_FIRST);
+        setup.call();
+
+        player.openInventory(inv);
+    }
+
+    public ItemStack item(Material mat, String name, List<String> lore) {
+        ItemStack item = new ItemStack(mat);
+        if (mat == null || mat.isAir()) return item;
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            if (name != null) meta.setDisplayName(ChatUtils.color(name));
+            if (lore != null) meta.setLore(ChatUtils.color(lore));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public ItemStack item(Material mat, String name) {
+        return item(mat, name, null);
+    }
+
+    public ItemStack item(Material mat) {
+        return item(mat, null, null);
+    }
+
+    public class GuiBuilder {
+        private final Inventory inv;
+        private final GuiHolder holder;
+
+        public GuiBuilder(Inventory inv, GuiHolder holder) {
+            this.inv = inv;
+            this.holder = holder;
+        }
+
+        public void slot(int slot, ItemStack item, Closure action) {
+            inv.setItem(slot, item);
+            if (action != null) {
+                holder.setAction(slot, action);
+            }
+        }
+
+        public void background(ItemStack item) {
+            for (int i = 0; i < inv.getSize(); i++) {
+                if (inv.getItem(i) == null || inv.getItem(i).getType() == Material.AIR) {
+                    inv.setItem(i, item);
+                }
+            }
+        }
     }
 }

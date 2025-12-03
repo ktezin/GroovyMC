@@ -1,5 +1,6 @@
 package me.groovymc;
 
+import me.groovymc.controller.GuiListener;
 import me.groovymc.controller.ModuleController;
 import me.groovymc.db.DatabaseManager;
 import me.groovymc.view.MessageView;
@@ -20,6 +21,7 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
         dbManager = new DatabaseManager(this);
         this.controller = new ModuleController(this);
 
+        getServer().getPluginManager().registerEvents(new GuiListener(), this);
         getCommand("groovymc").setExecutor(this);
 
         controller.loadAll();
