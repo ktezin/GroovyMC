@@ -102,17 +102,13 @@ public abstract class GroovyMCBase extends Script {
         module.addListener(listener);
     }
 
-    public void command(String name, Closure action) {
-        Command cmd = new Command(name) {
-            @Override
-            public boolean execute(CommandSender sender, String label, String[] args) {
-                action.call(sender, args);
-                return true;
-            }
-        };
+    public ScriptCommand command(String name, Closure action) {
+        ScriptCommand cmd = new ScriptCommand(name, action);
 
         commandRegistry.register(cmd);
         module.addCommand(cmd);
+
+        return cmd;
     }
 
     public void debug(Object msg) {
