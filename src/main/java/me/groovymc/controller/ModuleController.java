@@ -76,7 +76,10 @@ public class ModuleController {
 
     private long calculateFolderLastModified(File file) {
         if (file.isFile()) {
-            return file.lastModified();
+            if (file.getName().endsWith(".groovy")) {
+                return file.lastModified();
+            }
+            return 0;
         }
 
         long maxTime = 0;
@@ -95,6 +98,8 @@ public class ModuleController {
     }
 
     public void loadModule(String name) {
+        if (name.startsWith("_")) return;
+
         unloadModule(name);
 
         File mainFile = new File(modulesFolder, name + "/main.groovy");
@@ -150,7 +155,9 @@ public class ModuleController {
     public void loadAll() {
         if (modulesFolder.listFiles() == null) return;
         for (File f : modulesFolder.listFiles()) {
-            if (f.isDirectory()) loadModule(f.getName());
+            if (f.isDirectory() && !f.getName().startsWith("_")) {
+                loadModule(f.getName());
+            }
         }
     }
 

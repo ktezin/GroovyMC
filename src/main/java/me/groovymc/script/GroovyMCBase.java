@@ -6,6 +6,7 @@ import me.groovymc.GroovyMCPlugin;
 import me.groovymc.controller.CommandRegistry;
 import me.groovymc.db.FluentDatabase;
 import me.groovymc.model.GuiHolder;
+import me.groovymc.model.ModuleConfig;
 import me.groovymc.model.ScriptModule;
 import groovy.lang.Closure;
 import groovy.lang.Script;
@@ -245,5 +246,17 @@ public abstract class GroovyMCBase extends Script {
                 }
             }
         }
+    }
+
+    public ModuleConfig getConfig() {
+        return module.getConfig();
+    }
+
+    public void saveConfig() {
+        module.getConfig().save();
+    }
+
+    public void reloadConfig() {
+        module.getConfig().reload();
     }
 }
