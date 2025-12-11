@@ -12,6 +12,9 @@ import me.groovymc.util.ChatUtils;
 import me.groovymc.view.MessageView;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -133,6 +136,54 @@ public abstract class GroovyMCBase extends Script {
 
     public void log(Object msg) {
         Bukkit.getConsoleSender().sendMessage(ChatUtils.color(msg));
+    }
+
+
+    public void title(Object target, Object title, Object subtitle, int fadeIn, int stay, int fadeOut) {
+        if (target instanceof Player) {
+            ((Player) target).sendTitle(
+                    ChatUtils.color(title),
+                    ChatUtils.color(subtitle),
+                    fadeIn, stay, fadeOut
+            );
+        }
+    }
+
+    public void title(Object target, Object title, Object subtitle) {
+        title(target, title, subtitle, 10, 70, 20);
+    }
+
+    public void actionBar(Object target, Object msg) {
+        if (target instanceof Player) {
+            ((Player) target).sendActionBar(ChatUtils.color(msg));
+        }
+    }
+
+    public BossBar bossBar(Object title, String colorStr, String styleStr, double progress) {
+        BarColor color;
+        try {
+            color = BarColor.valueOf(colorStr.toUpperCase());
+        } catch (Exception e) {
+            color = BarColor.WHITE;
+        }
+
+        BarStyle style;
+        try {
+            style = BarStyle.valueOf(styleStr.toUpperCase());
+        } catch (Exception e) {
+            style = BarStyle.SOLID;
+        }
+
+        BossBar bar = Bukkit.createBossBar(ChatUtils.color(title), color, style);
+        bar.setProgress(progress);
+
+        module.addBossBar(bar);
+
+        return bar;
+    }
+
+    public BossBar bossBar(Object title, String colorStr) {
+        return bossBar(title, colorStr, "SOLID", 1.0);
     }
 
     public void repeat(long delay, long period, Closure action) {

@@ -1,6 +1,7 @@
 package me.groovymc.model;
 
 import groovy.lang.Script;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -20,6 +21,7 @@ public class ScriptModule {
     private final List<Listener> listeners = new ArrayList<>();
     private final List<Command> commands = new ArrayList<>();
     private final List<Integer> taskIds = new ArrayList<>();
+    private final List<BossBar> activeBossBars = new ArrayList<>();
 
     public ScriptModule(String name, File mainFile) {
         this.name = name;
@@ -36,6 +38,16 @@ public class ScriptModule {
         taskIds.clear();
 
         commands.clear();
+
+        activeBossBars.forEach(bar -> {
+            bar.removeAll();
+            bar.setVisible(false);
+        });
+        activeBossBars.clear();
+    }
+
+    public void addBossBar(BossBar bar) {
+        activeBossBars.add(bar);
     }
 
     public void addListener(Listener listener) {
