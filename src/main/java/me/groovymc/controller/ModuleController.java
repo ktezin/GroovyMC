@@ -11,6 +11,8 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +33,61 @@ public class ModuleController {
         if (!modulesFolder.exists()) modulesFolder.mkdirs();
 
         Bukkit.getScheduler().runTaskTimer(plugin, this::watchFiles, 40L, 40L);
+    }
+
+    public boolean createModule(String name) {
+        name = name.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+
+        File folder = new File(modulesFolder, name);
+        if (folder.exists()) {
+            return false;
+        }
+
+        folder.mkdirs();
+        File mainFile = new File(folder, "main.groovy");
+
+        String template = """
+        // GroovyMC Module: %s
+        // Created At: %s
+        
+        import me.groovymc.script.GroovyMCBase
+        import groovy.transform.BaseScript
+        @BaseScript GroovyMCBase base
+        
+        // Global Değişkenler
+        PREFIX = color("&8[&b%s&8] ")
+        
+        onEnable {
+            log(PREFIX + "&aModül başarıyla başlatıldı!")
+        }
+        
+        onDisable {
+            log(PREFIX + "&cModül durduruldu.")
+        }
+        
+        // Örnek Komut: /%s-test
+        command("%s-test") { sender, args ->
+            message(sender, PREFIX + "&eTebrikler! Modülün çalışıyor.")
+            
+            // Örnek GUI
+            gui(sender, "&8Test Menü", 1) {
+                slot(4, item(org.bukkit.Material.DIAMOND, "&bÖdül")) { e ->
+                    message(e.whoClicked, "&aElmas kazandın!")
+                    e.whoClicked.closeInventory()
+                }
+            }
+        }
+        """.formatted(name, new java.util.Date().toString(), name, name, name);
+
+        try {
+            Files.writeString(mainFile.toPath(), template, StandardOpenOption.CREATE);
+
+            loadModule(name);
+            return true;
+        } catch (Exception e) {
+            MessageView.logError("Error while creating module: " + name, e);
+            return false;
+        }
     }
 
     private void watchFiles() {

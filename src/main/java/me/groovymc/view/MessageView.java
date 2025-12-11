@@ -5,7 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 public class MessageView {
-    private static final String PREFIX = ChatUtils.color("&8[&6GroovyMC&8] ");
+    private static final String PREFIX = ChatUtils.color("&8[&6GroovyMC&8] &r");
 
     public static void log(String message) {
         Bukkit.getConsoleSender().sendMessage(ChatUtils.color(message));

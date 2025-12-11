@@ -58,6 +58,10 @@ public class ScriptModule {
         commands.add(command);
     }
 
+    public void removeTask(int taskId) {
+        taskIds.remove(Integer.valueOf(taskId));
+    }
+
     public void addTask(int taskId) {
         taskIds.add(taskId);
     }

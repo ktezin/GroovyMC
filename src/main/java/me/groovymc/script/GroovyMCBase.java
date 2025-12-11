@@ -26,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
@@ -186,14 +187,53 @@ public abstract class GroovyMCBase extends Script {
         return bossBar(title, colorStr, "SOLID", 1.0);
     }
 
-    public void repeat(long delay, long period, Closure action) {
-        BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> action.call(), delay, period);
-        module.addTask(task.getTaskId());
+    public int repeat(long delay, long period, Closure action) {
+        BukkitRunnable runnable = new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    action.setDelegate(this);
+                    action.setResolveStrategy(Closure.DELEGATE_FIRST);
+                    action.call();
+                } catch (Exception e) {
+                    MessageView.logError("Repeat task error", e);
+                    this.cancel();
+                }
+            }
+        };
+
+        BukkitTask task = runnable.runTaskTimer(plugin, delay, period);
+        int id = task.getTaskId();
+        module.addTask(id);
+        return id;
     }
 
-    public void after(long delay, Closure action) {
-        BukkitTask task = Bukkit.getScheduler().runTaskLater(plugin, () -> action.call(), delay);
-        module.addTask(task.getTaskId());
+    public int after(long delay, Closure action) {
+        BukkitRunnable runnable = new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    action.setDelegate(this);
+                    action.setResolveStrategy(Closure.DELEGATE_FIRST);
+                    action.call();
+                } catch (Exception e) {
+                    MessageView.logError("After task error", e);
+                }
+            }
+        };
+
+        BukkitTask task = runnable.runTaskLater(plugin, delay);
+        int id = task.getTaskId();
+        module.addTask(id);
+        return id;
+    }
+
+    public void finish(Object taskIdObj) {
+        if (taskIdObj instanceof Number) {
+            int id = ((Number) taskIdObj).intValue();
+            Bukkit.getScheduler().cancelTask(id);
+            module.removeTask(id);
+        }
     }
 
     public void sidebar(Player player, Closure closure) {

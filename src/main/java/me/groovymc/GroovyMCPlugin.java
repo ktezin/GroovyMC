@@ -36,7 +36,10 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
         if (!sender.hasPermission("groovymc.admin")) return true;
 
         if (args.length == 0) {
-            MessageView.send(sender, "&eUsage: /groovymc <load|unload|reload|list> [module]");
+            MessageView.send(sender, "&eList of commands for GroovyMC");
+            MessageView.send(sender, "&e- /groovymc <load|unload|reload|enable|disable|debug> [module]");
+            MessageView.send(sender, "&e- /groovymc create <module_name>");
+            MessageView.send(sender, "&e- /groovymc list");
             return true;
         }
 
@@ -44,6 +47,17 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
         String moduleName = args.length > 1 ? args[1] : null;
 
         switch (action) {
+            case "create":
+                if (moduleName == null) {
+                    MessageView.sendError(sender, "Usage: /gmc create <module_name>");
+                    return true;
+                }
+                if (controller.createModule(moduleName.toLowerCase())) {
+                    MessageView.sendSuccess(sender, "Module &e" + moduleName + " &ais created!");
+                } else {
+                    MessageView.sendError(sender, "Module cannot be created!");
+                }
+                break;
             case "list":
                 MessageView.sendSuccess(sender, "Active modules:");
                 controller.getModules().keySet().forEach(k -> MessageView.send(sender, " - " + k));
