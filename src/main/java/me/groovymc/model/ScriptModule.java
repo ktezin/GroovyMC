@@ -14,6 +14,7 @@ public class ScriptModule {
     private final File mainFile;
     private final File moduleFolder;
     private Script scriptInstance;
+    private boolean debugMode = false;
 
     private final List<Listener> listeners = new ArrayList<>();
     private final List<Command> commands = new ArrayList<>();
@@ -40,6 +41,8 @@ public class ScriptModule {
     public void addTask(int taskId) { taskIds.add(taskId); }
 
     public List<Command> getCommands() { return new ArrayList<>(commands); }
+    public boolean isDebugMode() { return debugMode; }
+    public void setDebugMode(boolean debugMode) { this.debugMode = debugMode; }
     public void setScriptInstance(Script script) { this.scriptInstance = script; }
     public Script getScriptInstance() { return scriptInstance; }
     public File getModuleFolder() {

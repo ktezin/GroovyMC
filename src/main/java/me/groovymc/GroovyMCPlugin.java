@@ -66,6 +66,32 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
             case "unload":
                 if (moduleName != null) controller.unloadModule(moduleName);
                 break;
+            case "disable":
+                if (moduleName != null) {
+                    if (controller.toggleModuleState(moduleName, false)) {
+                        MessageView.sendSuccess(sender, moduleName + " disabled.");
+                    } else {
+                        MessageView.sendError(sender, "The module was either not found or not loaded.");
+                    }
+                }
+                break;
+            case "enable":
+                if (moduleName != null) {
+                    String target = moduleName.startsWith("_") ? moduleName.substring(1) : moduleName;
+
+                    if (controller.toggleModuleState(target, true)) {
+                        MessageView.sendSuccess(sender, target + " activated.");
+                    } else {
+                        MessageView.sendError(sender, "No such disabled module was found.");
+                    }
+                }
+                break;
+
+            case "debug":
+                if (moduleName != null) {
+                    controller.toggleDebug(moduleName);
+                }
+                break;
         }
         return true;
     }

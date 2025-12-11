@@ -8,6 +8,7 @@ import groovy.lang.GroovyShell;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 
 import java.io.File;
 import java.util.HashMap;
@@ -40,28 +41,37 @@ public class ModuleController {
 
         for (File folder : files) {
             if (folder.isDirectory()) {
+                String name = folder.getName();
+
+                if (name.startsWith("_")) continue;
+
                 File main = new File(folder, "main.groovy");
 
-                if (main.exists()) {
-                    String name = folder.getName();
+                if (!main.exists()) continue;
 
-                    long currentModified = calculateFolderLastModified(folder);
+                long currentModified = calculateFolderLastModified(folder);
 
-                    if (!modules.containsKey(name)) {
-                        loadModule(name);
+                if (!modules.containsKey(name)) {
+                    loadModule(name);
+                    fileTimestamps.put(name, currentModified);
+                } else {
+                    Long lastKnown = fileTimestamps.get(name);
+                    if (lastKnown == null || currentModified > lastKnown) {
+                        MessageView.log("Changes detected: " + name + ", module reloading...");
+                        reloadModule(name);
                         fileTimestamps.put(name, currentModified);
-                    }
-                    else {
-                        Long lastKnown = fileTimestamps.get(name);
-                        if (lastKnown == null || currentModified > lastKnown) {
-                            MessageView.log("Changes detected: " + name + ", module reloading...");
-                            reloadModule(name);
-                            fileTimestamps.put(name, currentModified);
-                        }
                     }
                 }
             }
         }
+
+        new HashMap<>(modules).keySet().forEach(activeName -> {
+            File folder = new File(modulesFolder, activeName);
+            if (!folder.exists()) {
+                unloadModule(activeName);
+                MessageView.log("Module not found, deactivated: " + activeName);
+            }
+        });
     }
 
     private long calculateFolderLastModified(File file) {
@@ -102,16 +112,15 @@ public class ModuleController {
             GroovyMCBase script = (GroovyMCBase) shell.parse(mainFile);
 
             script.init(plugin, finalModule, commandRegistry);
-
             script.run();
-
             script.doEnable();
 
             module.setScriptInstance(script);
             modules.put(name, module);
             MessageView.log("Module loaded: " + name);
         } catch (Exception e) {
-            MessageView.logError("An error occured while loading module: " + name, e);
+            printScriptError(name, e);
+            module.cleanup();
         }
     }
 
@@ -149,5 +158,60 @@ public class ModuleController {
         new HashMap<>(modules).keySet().forEach(this::unloadModule);
     }
 
-    public Map<String, ScriptModule> getModules() { return modules; }
+    public boolean toggleModuleState(String name, boolean enable) {
+        File folder = new File(modulesFolder, name);
+        File disabledFolder = new File(modulesFolder, "_" + name);
+
+        if (enable) {
+            if (disabledFolder.exists()) {
+                return disabledFolder.renameTo(folder);
+            }
+        } else {
+            if (folder.exists()) {
+                unloadModule(name);
+                return folder.renameTo(disabledFolder);
+            }
+        }
+        return false;
+    }
+
+    public void toggleDebug(String name) {
+        if (modules.containsKey(name)) {
+            ScriptModule m = modules.get(name);
+            m.setDebugMode(!m.isDebugMode());
+            MessageView.log(name + " debug mode: " + (m.isDebugMode() ? "&aON" : "&cOFF"));
+        } else {
+            MessageView.log("&cThe module was either not found or not loaded.");
+        }
+    }
+
+    private void printScriptError(String moduleName, Exception e) {
+        MessageView.logError("&c---------------------------------------------");
+        MessageView.logError("&c[ERROR] Module '" + moduleName + "' could not be loaded!");
+
+        if (e instanceof MultipleCompilationErrorsException) {
+            MessageView.logError("&eReason: &fSyntax Error");
+
+            String msg = e.getMessage();
+            if (msg.contains("startup failed:")) msg = msg.replace("startup failed:", "").trim();
+
+            MessageView.logError("&7Details: " + msg);
+        }
+        else {
+            MessageView.logError("&eReason: &f" + e.getClass().getSimpleName());
+            MessageView.logError("&7Message: " + e.getMessage());
+
+            for (StackTraceElement element : e.getStackTrace()) {
+                if (element.getFileName() != null && element.getFileName().endsWith(".groovy")) {
+                    MessageView.logError("&6Location: &f" + element.getFileName() + " -> Line " + element.getLineNumber());
+                    break;
+                }
+            }
+        }
+        MessageView.logError("&c---------------------------------------------");
+    }
+
+    public Map<String, ScriptModule> getModules() {
+        return modules;
+    }
 }

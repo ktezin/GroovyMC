@@ -116,6 +116,12 @@ public abstract class GroovyMCBase extends Script {
         module.addCommand(cmd);
     }
 
+    public void debug(Object msg) {
+        if (module.isDebugMode()) {
+            MessageView.log("&e[DEBUG] (" + module.getName() + "): &f" + msg.toString());
+        }
+    }
+
     public String color(Object text) {
         return ChatUtils.color(text);
     }
