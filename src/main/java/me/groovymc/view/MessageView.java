@@ -3,34 +3,20 @@ package me.groovymc.view;
 import me.groovymc.util.ChatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.logging.Level;
 
 public class MessageView {
-    private static JavaPlugin plugin;
     private static final String PREFIX = ChatUtils.color("&8[&6GroovyMC&8] ");
 
-    public static void init(JavaPlugin pl) {
-        plugin = pl;
-    }
-
     public static void log(String message) {
-        if (plugin != null) {
-            plugin.getLogger().info(ChatUtils.color(message));
-        }
+        Bukkit.getConsoleSender().sendMessage(ChatUtils.color(message));
     }
 
     public static void logError(String message) {
-        if (plugin != null) {
-            plugin.getLogger().log(Level.SEVERE, message);
-        }
+        Bukkit.getConsoleSender().sendMessage(ChatUtils.color("&c[ERROR] " + message));
     }
 
     public static void logError(String message, Exception e) {
-        if (plugin != null) {
-            plugin.getLogger().log(Level.SEVERE, message, e);
-        }
+        Bukkit.getConsoleSender().sendMessage(ChatUtils.color("&c[ERROR] " + message), e.toString());
     }
 
     public static void send(CommandSender sender, String message) {
@@ -38,11 +24,11 @@ public class MessageView {
     }
 
     public static void sendSuccess(CommandSender sender, String message) {
-        send(sender, "&a" + message);
+        send(sender, "&a" + ChatUtils.color(message));
     }
 
     public static void sendError(CommandSender sender, String message) {
-        send(sender, "&c" + message);
+        send(sender, "&c" + ChatUtils.color(message));
     }
 
     public static void broadcast(String message) {

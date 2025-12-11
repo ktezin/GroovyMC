@@ -50,17 +50,17 @@ public class ModuleController {
                 if (!main.exists()) continue;
 
                 long currentModified = calculateFolderLastModified(folder);
+                Long lastKnown = fileTimestamps.get(name);
 
-                if (!modules.containsKey(name)) {
-                    loadModule(name);
-                    fileTimestamps.put(name, currentModified);
-                } else {
-                    Long lastKnown = fileTimestamps.get(name);
-                    if (lastKnown == null || currentModified > lastKnown) {
+
+                if (lastKnown == null || currentModified > lastKnown) {
+                    if (lastKnown != null) {
                         MessageView.log("Changes detected: " + name + ", module reloading...");
-                        reloadModule(name);
-                        fileTimestamps.put(name, currentModified);
                     }
+
+                    loadModule(name);
+
+                    fileTimestamps.put(name, currentModified);
                 }
             }
         }

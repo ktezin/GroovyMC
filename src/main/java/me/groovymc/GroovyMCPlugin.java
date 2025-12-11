@@ -16,8 +16,6 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
 
     @Override
     public void onEnable() {
-        MessageView.init(this);
-
         dbManager = new DatabaseManager(this);
         this.controller = new ModuleController(this);
 

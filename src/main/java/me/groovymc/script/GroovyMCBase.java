@@ -5,12 +5,9 @@ import groovy.sql.Sql;
 import me.groovymc.GroovyMCPlugin;
 import me.groovymc.controller.CommandRegistry;
 import me.groovymc.db.FluentDatabase;
-import me.groovymc.model.GuiHolder;
-import me.groovymc.model.ModuleConfig;
-import me.groovymc.model.ScriptModule;
+import me.groovymc.model.*;
 import groovy.lang.Closure;
 import groovy.lang.Script;
-import me.groovymc.model.SimpleSidebar;
 import me.groovymc.util.ChatUtils;
 import me.groovymc.view.MessageView;
 import org.bukkit.Bukkit;
@@ -67,7 +64,7 @@ public abstract class GroovyMCBase extends Script {
             childScript.run();
 
         } catch (Exception e) {
-            MessageView.logError("An error occoured when loading " + path );
+            MessageView.logError("An error occoured when loading " + path);
             e.printStackTrace();
         }
     }
@@ -93,7 +90,8 @@ public abstract class GroovyMCBase extends Script {
 
 
     public <T extends Event> void onEvent(Class<T> eventClass, Closure action) {
-        Listener listener = new Listener() {};
+        Listener listener = new Listener() {
+        };
         EventExecutor executor = (l, e) -> {
             if (eventClass.isInstance(e)) {
                 action.call(e);
@@ -258,5 +256,9 @@ public abstract class GroovyMCBase extends Script {
 
     public void reloadConfig() {
         module.getConfig().reload();
+    }
+
+    public NbtWrapper nbt(Object target) {
+        return new NbtWrapper(plugin, target);
     }
 }
