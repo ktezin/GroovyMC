@@ -2,6 +2,7 @@ package me.groovymc;
 
 import me.groovymc.controller.GuiListener;
 import me.groovymc.controller.ModuleController;
+import me.groovymc.controller.WorkspaceManager;
 import me.groovymc.db.DatabaseManager;
 import me.groovymc.view.MessageView;
 import org.bukkit.command.Command;
@@ -12,12 +13,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
 
     public static DatabaseManager dbManager;
+    private WorkspaceManager workspaceManager;
     private ModuleController controller;
 
     @Override
     public void onEnable() {
         dbManager = new DatabaseManager(this);
         this.controller = new ModuleController(this);
+        this.workspaceManager = new WorkspaceManager(this);
 
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
         getCommand("groovymc").setExecutor(this);
@@ -63,13 +66,14 @@ public class GroovyMCPlugin extends JavaPlugin implements CommandExecutor {
                 controller.getModules().keySet().forEach(k -> MessageView.send(sender, " - " + k));
                 break;
             case "reload":
+                workspaceManager.setupWorkspace();
                 if (moduleName != null) {
                     controller.reloadModule(moduleName);
                     MessageView.sendSuccess(sender, moduleName + " reloaded.");
                 } else {
                     controller.unloadAll();
                     controller.loadAll();
-                    MessageView.sendSuccess(sender, "All modules reloaded.");
+                    MessageView.sendSuccess(sender, "All modules and workspace reloaded.");
                 }
                 break;
             case "load":
