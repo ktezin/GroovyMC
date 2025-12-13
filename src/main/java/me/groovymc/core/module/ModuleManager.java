@@ -55,28 +55,33 @@ public class ModuleManager {
         import groovy.transform.BaseScript
         @BaseScript ScriptAPI base
         
-        // Global Değişkenler
+        // Global variables
         PREFIX = color("&8[&b%s&8] ")
         
         onEnable {
-            log(PREFIX + "&aModül başarıyla başlatıldı!")
+            log(PREFIX + "&aModule successfully loaded!")
         }
         
         onDisable {
-            log(PREFIX + "&cModül durduruldu.")
+            log(PREFIX + "&cModule unloaded.")
         }
         
-        // Örnek Komut: /%s-test
+        // Example Command: /%s-test
         command("%s-test") { sender, args ->
-            message(sender, PREFIX + "&eTebrikler! Modülün çalışıyor.")
+            message(sender, PREFIX + "&eCongrats! Your new module is working.")
             
-            // Örnek GUI
-            gui(sender, "&8Test Menü", 1) {
-                slot(4, item(org.bukkit.Material.DIAMOND, "&bÖdül")) { e ->
-                    message(e.whoClicked, "&aElmas kazandın!")
+            // Example GUI
+            gui(sender, "&8Test Menu", 1) {
+                slot(4, item(org.bukkit.Material.DIAMOND, "&bPrize")) { e ->
+                    message(e.whoClicked, "&aYou won a diamond!")
                     e.whoClicked.closeInventory()
                 }
             }
+        }
+        
+        // Example Event
+        onEvent(org.bukkit.event.player.PlayerJoinEvent) { e ->
+            broadcast("&a${e.player} has joined. Welcome!")
         }
         """.formatted(name, new java.util.Date().toString(), name, name, name, name);
 
@@ -109,7 +114,6 @@ public class ModuleManager {
 
                 long currentModified = calculateFolderLastModified(folder);
                 Long lastKnown = fileTimestamps.get(name);
-
 
                 if (lastKnown == null || currentModified > lastKnown) {
                     if (lastKnown != null) {
@@ -212,11 +216,15 @@ public class ModuleManager {
 
     public void loadAll() {
         if (modulesFolder.listFiles() == null) return;
+        long started = System.currentTimeMillis();
         for (File f : modulesFolder.listFiles()) {
             if (f.isDirectory() && !f.getName().startsWith("_")) {
                 loadModule(f.getName());
+                fileTimestamps.put(f.getName(), calculateFolderLastModified(f));
             }
         }
+        long now = ((System.currentTimeMillis() - started) / 1000) % 60;
+        MessageView.log("Total of " + modules.size() + " modules loaded in " + now + "s");
     }
 
     public void unloadAll() {

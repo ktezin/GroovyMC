@@ -2,6 +2,7 @@ package me.groovymc.features.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import me.groovymc.view.MessageView;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public class DatabaseManager {
         config.setPoolName("GroovyMCPool");
 
         this.dataSource = new HikariDataSource(config);
-        plugin.getLogger().info("Veritabanı havuzu başlatıldı.");
+        MessageView.log("Database pool started.");
     }
 
     public HikariDataSource getDataSource() {

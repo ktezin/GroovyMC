@@ -8,15 +8,15 @@ public class MessageView {
     private static final String PREFIX = ChatUtils.color("&8[&6GroovyMC&8] &r");
 
     public static void log(String message) {
-        Bukkit.getConsoleSender().sendMessage(ChatUtils.color(message));
+        Bukkit.getConsoleSender().sendMessage(PREFIX + ChatUtils.color(message));
     }
 
     public static void logError(String message) {
-        Bukkit.getConsoleSender().sendMessage(ChatUtils.color("&c[ERROR] " + message));
+        Bukkit.getConsoleSender().sendMessage(PREFIX + ChatUtils.color("&c[ERROR] " + message));
     }
 
     public static void logError(String message, Exception e) {
-        Bukkit.getConsoleSender().sendMessage(ChatUtils.color("&c[ERROR] " + message), e.toString());
+        Bukkit.getConsoleSender().sendMessage(PREFIX + ChatUtils.color("&c[ERROR] " + message), e.toString());
     }
 
     public static void send(CommandSender sender, String message) {

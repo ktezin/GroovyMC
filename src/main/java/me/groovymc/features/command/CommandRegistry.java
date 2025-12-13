@@ -73,6 +73,8 @@ public class CommandRegistry {
     }
 
     private void syncCommands() {
+        if (!plugin.isEnabled()) return;
+
         Bukkit.getScheduler().runTask(plugin, () -> {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 p.updateCommands();
