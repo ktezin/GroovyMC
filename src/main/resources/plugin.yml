@@ -1,10 +1,9 @@
 name: GroovyMC
 version: '${project.version}'
-main: me.groovymc.GroovyMCPlugin
+main: me.groovymc.GroovyMC
 api-version: 1.21
 description: Groovy based paper spigot scripting plugin
-authors: [iKaganT]
-website: ktezin.github.io
+authors: [ktezin]
 
 libraries:
   - org.codehaus.groovy:groovy:3.0.25

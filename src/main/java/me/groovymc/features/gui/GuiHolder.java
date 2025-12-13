@@ -1,4 +1,4 @@
-package me.groovymc.model;
+package me.groovymc.features.gui;
 
 import groovy.lang.Closure;
 import org.bukkit.inventory.Inventory;

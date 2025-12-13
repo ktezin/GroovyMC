@@ -1,4 +1,4 @@
-package me.groovymc.model;
+package me.groovymc.core.module;
 
 import groovy.lang.GroovyObjectSupport;
 import me.groovymc.view.MessageView;

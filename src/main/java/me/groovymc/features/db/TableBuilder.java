@@ -1,4 +1,4 @@
-package me.groovymc.db;
+package me.groovymc.features.db;
 
 import groovy.sql.Sql;
 import me.groovymc.view.MessageView;

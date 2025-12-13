@@ -1,4 +1,4 @@
-package me.groovymc.controller;
+package me.groovymc.core.workspace;
 
 import me.groovymc.view.MessageView;
 import org.bukkit.plugin.java.JavaPlugin;

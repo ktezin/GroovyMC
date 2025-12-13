@@ -119,7 +119,7 @@ To get code completion in IntelliJ IDEA:
 3. Add the following header to your script files:
 
 ```groovy
-import me.groovymc.script.GroovyMCBase
+import me.groovymc.api.ScriptAPI
 import groovy.transform.BaseScript
-@BaseScript GroovyMCBase base
+@BaseScript ScriptAPI base
 ```

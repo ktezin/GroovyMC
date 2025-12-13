@@ -1,4 +1,4 @@
-package me.groovymc.model;
+package me.groovymc.features.command;
 
 import groovy.lang.Closure;
 import org.bukkit.command.Command;

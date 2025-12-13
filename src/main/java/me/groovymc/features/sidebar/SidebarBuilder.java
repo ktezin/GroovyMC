@@ -1,4 +1,4 @@
-package me.groovymc.model;
+package me.groovymc.features.sidebar;
 
 import me.groovymc.util.ChatUtils;
 import org.bukkit.Bukkit;
@@ -11,13 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SimpleSidebar {
+public class SidebarBuilder {
     private final Player player;
     private final Scoreboard scoreboard;
     private final Objective objective;
     private final Map<Integer, String> currentLines = new HashMap<>();
 
-    public SimpleSidebar(Player player, String title) {
+    public SidebarBuilder(Player player, String title) {
         this.player = player;
         this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         this.objective = scoreboard.registerNewObjective("sidebar", "dummy", ChatUtils.color(title));
@@ -43,10 +43,10 @@ public class SimpleSidebar {
             }
         }
 
-        int score = 15;
+        int score = 0;
         for (Object obj : lines) {
             String line = (obj == null) ? "" : obj.toString();
-            setLine(score--, line);
+            setLine(score++, line);
         }
     }
 

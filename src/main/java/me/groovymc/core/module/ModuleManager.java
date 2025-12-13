@@ -1,7 +1,7 @@
-package me.groovymc.controller;
+package me.groovymc.core.module;
 
-import me.groovymc.model.ScriptModule;
-import me.groovymc.script.GroovyMCBase;
+import me.groovymc.api.ScriptAPI;
+import me.groovymc.features.command.CommandRegistry;
 import me.groovymc.view.MessageView;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -16,7 +16,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModuleController {
+public class ModuleManager {
     private final JavaPlugin plugin;
     private final CommandRegistry commandRegistry;
 
@@ -24,7 +24,7 @@ public class ModuleController {
     private final Map<String, Long> fileTimestamps = new HashMap<>();
     private final File modulesFolder;
 
-    public ModuleController(JavaPlugin plugin) {
+    public ModuleManager(JavaPlugin plugin) {
         this.plugin = plugin;
 
         this.commandRegistry = new CommandRegistry(plugin);
@@ -49,10 +49,11 @@ public class ModuleController {
         String template = """
         // GroovyMC Module: %s
         // Created At: %s
+        package %s
         
-        import me.groovymc.script.GroovyMCBase
+        import me.groovymc.api.ScriptAPI
         import groovy.transform.BaseScript
-        @BaseScript GroovyMCBase base
+        @BaseScript ScriptAPI base
         
         // Global Değişkenler
         PREFIX = color("&8[&b%s&8] ")
@@ -77,7 +78,7 @@ public class ModuleController {
                 }
             }
         }
-        """.formatted(name, new java.util.Date().toString(), name, name, name);
+        """.formatted(name, new java.util.Date().toString(), name, name, name, name);
 
         try {
             Files.writeString(mainFile.toPath(), template, StandardOpenOption.CREATE);
@@ -166,12 +167,12 @@ public class ModuleController {
 
         try {
             CompilerConfiguration config = new CompilerConfiguration();
-            config.setScriptBaseClass(GroovyMCBase.class.getName());
+            config.setScriptBaseClass(ScriptAPI.class.getName());
 
             GroovyShell shell = new GroovyShell(plugin.getClass().getClassLoader(), new Binding(), config);
 
             ScriptModule finalModule = module;
-            GroovyMCBase script = (GroovyMCBase) shell.parse(mainFile);
+            ScriptAPI script = (ScriptAPI) shell.parse(mainFile);
 
             script.init(plugin, finalModule, commandRegistry);
             script.run();
@@ -190,8 +191,8 @@ public class ModuleController {
         ScriptModule module = modules.remove(name);
         if (module != null) {
             try {
-                if (module.getScriptInstance() instanceof GroovyMCBase) {
-                    ((GroovyMCBase) module.getScriptInstance()).doDisable();
+                if (module.getScriptInstance() instanceof ScriptAPI) {
+                    ((ScriptAPI) module.getScriptInstance()).doDisable();
                 }
             } catch (Exception e) {
                 e.printStackTrace();

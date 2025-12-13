@@ -1,4 +1,4 @@
-package me.groovymc.db;
+package me.groovymc.features.db;
 
 import groovy.lang.GroovyObjectSupport;
 import groovy.sql.Sql;

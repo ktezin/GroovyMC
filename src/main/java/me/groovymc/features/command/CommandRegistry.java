@@ -1,4 +1,4 @@
-package me.groovymc.controller;
+package me.groovymc.features.command;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;

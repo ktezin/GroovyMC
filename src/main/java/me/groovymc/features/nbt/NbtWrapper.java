@@ -1,4 +1,4 @@
-package me.groovymc.model;
+package me.groovymc.features.nbt;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.TileState;

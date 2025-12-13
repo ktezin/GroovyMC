@@ -1,11 +1,16 @@
-package me.groovymc.script;
+package me.groovymc.api;
 
 import groovy.lang.GroovyShell;
 import groovy.sql.Sql;
-import me.groovymc.GroovyMCPlugin;
-import me.groovymc.controller.CommandRegistry;
-import me.groovymc.db.FluentDatabase;
-import me.groovymc.model.*;
+import me.groovymc.GroovyMC;
+import me.groovymc.core.module.ModuleConfig;
+import me.groovymc.core.module.ScriptModule;
+import me.groovymc.features.command.CommandRegistry;
+import me.groovymc.features.db.FluentDatabase;
+import me.groovymc.features.command.ScriptCommand;
+import me.groovymc.features.gui.GuiHolder;
+import me.groovymc.features.nbt.NbtWrapper;
+import me.groovymc.features.sidebar.SidebarBuilder;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 import me.groovymc.util.ChatUtils;
@@ -15,7 +20,6 @@ import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -35,12 +39,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class GroovyMCBase extends Script {
+public abstract class ScriptAPI extends Script {
 
     private JavaPlugin plugin;
     private ScriptModule module;
     private CommandRegistry commandRegistry;
-    private final Map<String, SimpleSidebar> activeBoards = new HashMap<>();
+    private final Map<String, SidebarBuilder> activeBoards = new HashMap<>();
     private Closure enableLogic;
     private Closure disableLogic;
 
@@ -60,10 +64,10 @@ public abstract class GroovyMCBase extends Script {
 
         try {
             CompilerConfiguration config = new CompilerConfiguration();
-            config.setScriptBaseClass(GroovyMCBase.class.getName());
+            config.setScriptBaseClass(ScriptAPI.class.getName());
 
             GroovyShell shell = new GroovyShell(plugin.getClass().getClassLoader(), this.getBinding(), config);
-            GroovyMCBase childScript = (GroovyMCBase) shell.parse(scriptFile);
+            ScriptAPI childScript = (ScriptAPI) shell.parse(scriptFile);
             childScript.init(plugin, module, commandRegistry);
             childScript.run();
 
@@ -80,7 +84,7 @@ public abstract class GroovyMCBase extends Script {
     public void onDisable(Closure closure) {
         this.disableLogic = closure;
 
-        activeBoards.values().forEach(SimpleSidebar::delete);
+        activeBoards.values().forEach(SidebarBuilder::delete);
         activeBoards.clear();
     }
 
@@ -237,9 +241,9 @@ public abstract class GroovyMCBase extends Script {
     }
 
     public void sidebar(Player player, Closure closure) {
-        SimpleSidebar board = activeBoards.computeIfAbsent(player.getName(), k -> new SimpleSidebar(player, "Stats"));
+        SidebarBuilder board = activeBoards.computeIfAbsent(player.getName(), k -> new SidebarBuilder(player, "Stats"));
 
-        SimpleSidebar.SidebarConfig config = new SimpleSidebar.SidebarConfig();
+        SidebarBuilder.SidebarConfig config = new SidebarBuilder.SidebarConfig();
 
         closure.setDelegate(config);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -269,7 +273,7 @@ public abstract class GroovyMCBase extends Script {
     }
 
     public FluentDatabase getDb() {
-        return new FluentDatabase(new Sql(GroovyMCPlugin.dbManager.getDataSource()), module.getName());
+        return new FluentDatabase(new Sql(GroovyMC.dbManager.getDataSource()), module.getName());
     }
 
     public void gui(Player player, String title, int rows, Closure setup) {
