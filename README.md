@@ -4,122 +4,51 @@
 ![Version](https://img.shields.io/badge/Version-v0.1.0_Alpha-blue)
 > ⚠️ **Note:** This project is currently under **active development**. APIs and features are subject to change. Not recommended for production servers yet.
 
-A lightweight, modular Groovy script engine for Minecraft (Paper/Spigot) servers. It allows you to develop game logic, commands, and events dynamically without restarting the server.
 
-## Features
+GroovyMC allows you to write Minecraft plugins using Groovy scripts. It is designed to be simple, fast, and supports hot-reloading. You can make changes to your code without restarting the server.
 
-- **Hot Reloading:** Changes in scripts are detected and applied automatically.
-- **Modular Structure:** Organize scripts into separate folders and sub-modules.
-- **Simple DSL:** Clean syntax for Commands, Events, Schedulers, and Scoreboards.
-- **Includes:** Split your code into multiple files using `include 'path/to/file.groovy'`.
-- **Global Binding:** Share variables and functions across included files.
-
-## Installation
-
-1. Build the project using Maven:
-   ```sh
-   mvn clean package
-
-2.  Place the `GroovyMC.jar` file into your server's `plugins` folder.
-3.  Restart the server.
-
-## Getting Started
-
-Scripts are located in `plugins/GroovyMC/modules/`.
-
-### Folder Structure
-
-```text
-plugins/GroovyMC/modules/
-└── my_module/
-    ├── main.groovy       <-- Entry point
-    ├── commands.groovy   <-- Optional: separated commands
-    └── utils.groovy      <-- Optional: shared functions
-```
-
-### Example Script (`main.groovy`)
+Here is how simple it is to create a command and register an event:
 
 ```groovy
-import org.bukkit.event.player.PlayerJoinEvent
-
-// Global variables (accessible from included files)
-PREFIX = color("&8[&6GroovyMC&8] ")
-
-// Import other files
-include 'commands.groovy'
-
-onEnable {
-    log("&aModule enabled successfully!")
+// Register a command
+command("hello") { sender, args ->
+    message(sender, "&aHello from GroovyMC!")
 }
 
-onDisable {
-    log("&cModule disabled.")
-}
-
-// Event Listener
-onEvent(PlayerJoinEvent) { e ->
-    broadcast("&e${e.player.name} &7joined the server!")
-    
-    // Delayed task (2 seconds)
-    after(40) {
-        message(e.player, "${PREFIX} &fWelcome to the server!")
-    }
-}
-
-// Repeating Task (Every 1 second)
-repeat(0, 20) {
-    // Logic here...
-}
-```
-
-### Commands API (`commands.groovy`)
-
-```groovy
-import org.bukkit.entity.Player
-
-command("heal") {sender, args ->
-    if (!(sender instanceof Player)) {
-        message(sender, "&cOnly players can use this command!")
-        return
-    }
-    Player p = sender as Player
-    p.setHealth(20d)
-    message(p, "&aYou are healed!")
-}
-```
-
-### Scoreboard API
-
-Easily create flicker-free sidebars.
-
-```groovy
+// Listen for an event
 onEvent(org.bukkit.event.player.PlayerJoinEvent) { e ->
-    updateBoard(e.player)
-}
-
-def updateBoard(p) {
-    sidebar(p) {
-        title = "&6&lStats"
-        lines = [
-            "&7---------------",
-            "&fName: &e${p.name}",
-            "&fPing: &a${p.ping} ms",
-            "&7---------------"
-        ]
-    }
+    broadcast("&e" + e.player.name + " joined the server.")
 }
 ```
 
-## IDE Setup (Intellisense)
+## Quick Start
 
-To get code completion in IntelliJ IDEA:
+You can create your first module directly from the game or from the server console.
 
-1. Create a new Java project in GroovyMC folder for your scripts.
-2. Add `GroovyMC.jar`, `Paper-API.jar` and `Groovy.jar` as libraries.
-3. Add the following header to your script files:
+1. Run the command:
+   `/groovymc create my_module`
 
-```groovy
-import me.groovymc.api.ScriptAPI
-import groovy.transform.BaseScript
-@BaseScript ScriptAPI base
-```
+2. This will create a new folder at `plugins/GroovyMC/modules/my_module/` with a ready-to-use script.
+
+3. Open the file `main.groovy` inside that folder and edit it.
+
+4.  Save your file and your changes are now live.
+
+## Installing Modules
+
+To install a module created by someone else:
+
+1.  Download the module folder.
+2.  Place the folder into `plugins/GroovyMC/modules/`.
+3.  Run the command `/groovymc reload`.
+
+## Examples and Documentation
+
+For more advanced features like Database connectivity, GUIs, Scoreboards, and Config management, please check the **examples** folder.
+
+* **[Browse Examples](./examples/README.md)**
+* **[Comprehensive Example Module](./examples/example_module/README.md)** (Recommended for learning)
+
+## Developer Note
+
+If you are using IntelliJ Idea open `plugins/GroovyMC/` as a project for full code completion, javadocs and Intellisense.
