@@ -89,20 +89,37 @@ public abstract class ScriptAPI extends Script {
     }
 
     public void doEnable() {
-        if (enableLogic != null) enableLogic.call();
+        if (enableLogic == null) return;
+
+        try {
+            enableLogic.call();
+        } catch (Exception e){
+            MessageView.logScriptError(module.getName(), e);
+        }
     }
 
     public void doDisable() {
-        if (disableLogic != null) disableLogic.call();
+        if (disableLogic == null) return;
+
+        try {
+            disableLogic.call();
+        } catch (Exception e){
+            MessageView.logScriptError(module.getName(), e);
+        }
     }
 
 
     public <T extends Event> void onEvent(Class<T> eventClass, Closure action) {
         Listener listener = new Listener() {
         };
+
         EventExecutor executor = (l, e) -> {
             if (eventClass.isInstance(e)) {
-                action.call(e);
+                try {
+                    action.call(e);
+                } catch (Exception ex) {
+                    MessageView.logScriptError(module.getName(), ex);
+                }
             }
         };
 
@@ -111,7 +128,7 @@ public abstract class ScriptAPI extends Script {
     }
 
     public ScriptCommand command(String name, Closure action) {
-        ScriptCommand cmd = new ScriptCommand(name, action);
+        ScriptCommand cmd = new ScriptCommand(name, module.getName(), action);
 
         commandRegistry.register(cmd);
         module.addCommand(cmd);
@@ -200,7 +217,7 @@ public abstract class ScriptAPI extends Script {
                     action.setResolveStrategy(Closure.DELEGATE_FIRST);
                     action.call();
                 } catch (Exception e) {
-                    MessageView.logError("Repeat task error", e);
+                    MessageView.logScriptError(module.getName(), e);
                     this.cancel();
                 }
             }
@@ -221,7 +238,7 @@ public abstract class ScriptAPI extends Script {
                     action.setResolveStrategy(Closure.DELEGATE_FIRST);
                     action.call();
                 } catch (Exception e) {
-                    MessageView.logError("After task error", e);
+                    MessageView.logScriptError(module.getName(), e);
                 }
             }
         };
@@ -247,7 +264,12 @@ public abstract class ScriptAPI extends Script {
 
         closure.setDelegate(config);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.call();
+        try {
+            closure.call();
+        } catch (Exception e) {
+            MessageView.logScriptError(module.getName(), e);
+            return;
+        }
 
         if (config.title != null) board.setTitle(config.title);
         if (config.lines != null) board.setLines(config.lines);
@@ -261,14 +283,30 @@ public abstract class ScriptAPI extends Script {
     }
 
     public void async(Closure action) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> action.call());
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                action.call();
+            } catch (Exception e){
+                MessageView.logScriptError(module.getName(), e);
+            }
+        });
     }
 
     public void sync(Closure action) {
         if (Bukkit.isPrimaryThread()) {
-            action.call();
+            try {
+                action.call();
+            } catch (Exception e) {
+                MessageView.logScriptError(module.getName(), e);
+            }
         } else {
-            Bukkit.getScheduler().runTask(plugin, () -> action.call());
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                try {
+                    action.call();
+                } catch (Exception e) {
+                    MessageView.logScriptError(module.getName(), e);
+                }
+            });
         }
     }
 
@@ -286,7 +324,12 @@ public abstract class ScriptAPI extends Script {
 
         setup.setDelegate(builder);
         setup.setResolveStrategy(Closure.DELEGATE_FIRST);
-        setup.call();
+        try {
+            setup.call();
+        } catch (Exception e) {
+            MessageView.logScriptError(module.getName(), e);
+            return;
+        }
 
         player.openInventory(inv);
     }

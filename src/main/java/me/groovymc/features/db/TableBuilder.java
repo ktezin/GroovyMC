@@ -10,10 +10,12 @@ import java.util.List;
 public class TableBuilder {
     private final Sql sql;
     private final String tableName;
+    private final String moduleName;
     private final List<String> definitions = new ArrayList<>();
 
-    public TableBuilder(Sql sql, String tableName) {
+    public TableBuilder(Sql sql, String moduleName, String tableName) {
         this.sql = sql;
+        this.moduleName = moduleName;
         this.tableName = tableName;
     }
 
@@ -70,7 +72,7 @@ public class TableBuilder {
         try {
             sql.execute(query);
         } catch (SQLException e) {
-            MessageView.logError("Error occured while creating (" + tableName + ") table: ", e);
+            MessageView.logScriptError(moduleName, e);
         }
     }
 }

@@ -1,5 +1,7 @@
 package me.groovymc.core.module;
 
+import com.mojang.brigadier.Message;
+import groovy.lang.GroovyCodeSource;
 import me.groovymc.api.ScriptAPI;
 import me.groovymc.features.command.CommandRegistry;
 import me.groovymc.view.MessageView;
@@ -8,9 +10,9 @@ import groovy.lang.GroovyShell;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
@@ -81,7 +83,7 @@ public class ModuleManager {
         
         // Example Event
         onEvent(org.bukkit.event.player.PlayerJoinEvent) { e ->
-            broadcast("&a${e.player} has joined. Welcome!")
+            broadcast("&a${e.player.name} has joined. Welcome!")
         }
         """.formatted(name, new java.util.Date().toString(), name, name, name, name);
 
@@ -175,8 +177,14 @@ public class ModuleManager {
 
             GroovyShell shell = new GroovyShell(plugin.getClass().getClassLoader(), new Binding(), config);
 
+            String scriptContent = Files.readString(mainFile.toPath(), StandardCharsets.UTF_8);
+            String virtualName = name + "_main.groovy";
+
+            GroovyCodeSource codeSource = new GroovyCodeSource(scriptContent, virtualName, "/groovy/script");
+            codeSource.setCachable(false);
+
             ScriptModule finalModule = module;
-            ScriptAPI script = (ScriptAPI) shell.parse(mainFile);
+            ScriptAPI script = (ScriptAPI) shell.parse(codeSource);
 
             script.init(plugin, finalModule, commandRegistry);
             script.run();
@@ -186,7 +194,7 @@ public class ModuleManager {
             modules.put(name, module);
             MessageView.log("Module loaded: " + name);
         } catch (Exception e) {
-            printScriptError(name, e);
+            MessageView.logScriptError(name, e);
             module.cleanup();
         }
     }
@@ -223,6 +231,10 @@ public class ModuleManager {
                 fileTimestamps.put(f.getName(), calculateFolderLastModified(f));
             }
         }
+        if (modules.isEmpty()) {
+            MessageView.log("No active modules found. You can create your first module using /groovymc create <name>");
+            return;
+        }
         long now = ((System.currentTimeMillis() - started) / 1000) % 60;
         MessageView.log("Total of " + modules.size() + " modules loaded in " + now + "s");
     }
@@ -256,32 +268,6 @@ public class ModuleManager {
         } else {
             MessageView.log("&cThe module was either not found or not loaded.");
         }
-    }
-
-    private void printScriptError(String moduleName, Exception e) {
-        MessageView.logError("&c---------------------------------------------");
-        MessageView.logError("&c[ERROR] Module '" + moduleName + "' could not be loaded!");
-
-        if (e instanceof MultipleCompilationErrorsException) {
-            MessageView.logError("&eReason: &fSyntax Error");
-
-            String msg = e.getMessage();
-            if (msg.contains("startup failed:")) msg = msg.replace("startup failed:", "").trim();
-
-            MessageView.logError("&7Details: " + msg);
-        }
-        else {
-            MessageView.logError("&eReason: &f" + e.getClass().getSimpleName());
-            MessageView.logError("&7Message: " + e.getMessage());
-
-            for (StackTraceElement element : e.getStackTrace()) {
-                if (element.getFileName() != null && element.getFileName().endsWith(".groovy")) {
-                    MessageView.logError("&6Location: &f" + element.getFileName() + " -> Line " + element.getLineNumber());
-                    break;
-                }
-            }
-        }
-        MessageView.logError("&c---------------------------------------------");
     }
 
     public Map<String, ScriptModule> getModules() {

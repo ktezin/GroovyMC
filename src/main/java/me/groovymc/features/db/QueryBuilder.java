@@ -12,14 +12,16 @@ import java.util.stream.Collectors;
 
 public class QueryBuilder {
     private final Sql sql;
+    private final String moduleName;
     private final String table;
 
     private final List<String> conditions = new ArrayList<>();
     private final List<Object> params = new ArrayList<>();
     private String currentField = null;
 
-    public QueryBuilder(Sql sql, String table) {
+    public QueryBuilder(Sql sql, String moduleName, String table) {
         this.sql = sql;
+        this.moduleName = moduleName;
         this.table = table;
     }
 
@@ -31,7 +33,7 @@ public class QueryBuilder {
 
             sql.execute(query, new ArrayList<>(data.values()));
         } catch (Exception e) {
-            MessageView.logError("Veritabanı ekleme hatası (Tablo: " + table + ")", e);
+            MessageView.logScriptError(moduleName, e);
         }
     }
 
@@ -71,8 +73,8 @@ public class QueryBuilder {
         try {
             return sql.rows(query, params);
         } catch (Exception e) {
-            MessageView.logError("Veri çekme hatası (Query: " + query + ")", e);
-            return Collections.emptyList(); // Hata varsa boş liste dön
+            MessageView.logScriptError(moduleName, e);
+            return Collections.emptyList();
         }
     }
 
@@ -81,8 +83,8 @@ public class QueryBuilder {
         try {
             return sql.firstRow(query, params);
         } catch (Exception e) {
-            MessageView.logError("Veri çekme hatası (Query: " + query + ")", e);
-            return null; // Hata varsa null dön
+            MessageView.logScriptError(moduleName, e);
+            return null;
         }
     }
 
@@ -92,8 +94,8 @@ public class QueryBuilder {
             GroovyRowResult res = sql.firstRow(query, params);
             return res != null ? ((Number) res.get("cnt")).intValue() : 0;
         } catch (Exception e) {
-            MessageView.logError("Sayma hatası (Query: " + query + ")", e);
-            return 0; // Hata varsa 0 dön
+            MessageView.logScriptError(moduleName, e);
+            return 0;
         }
     }
 
@@ -108,8 +110,8 @@ public class QueryBuilder {
             String query = "UPDATE " + table + " SET " + setClause + buildWhere();
             return sql.executeUpdate(query, updateParams);
         } catch (Exception e) {
-            MessageView.logError("Güncelleme hatası (Tablo: " + table + ")", e);
-            return 0; // Hata varsa 0 satır güncellendi dön
+            MessageView.logScriptError(moduleName, e);
+            return 0;
         }
     }
 
@@ -118,7 +120,7 @@ public class QueryBuilder {
         try {
             return sql.executeUpdate(query, params);
         } catch (Exception e) {
-            MessageView.logError("Silme hatası (Tablo: " + table + ")", e);
+            MessageView.logScriptError(moduleName, e);
             return 0;
         }
     }
