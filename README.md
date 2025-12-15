@@ -1,7 +1,6 @@
-
 # GroovyMC
 ![Status](https://img.shields.io/badge/Status-Work_in_Progress-orange)
-![Version](https://img.shields.io/badge/Version-v0.1.0_Alpha-blue)
+![Version](https://img.shields.io/github/v/release/ktezin/GroovyMC?include_prereleases&color=blue&style=for-the-badge)
 > ⚠️ **Note:** This project is currently under **active development**. APIs and features are subject to change. Not recommended for production servers yet.
 
 

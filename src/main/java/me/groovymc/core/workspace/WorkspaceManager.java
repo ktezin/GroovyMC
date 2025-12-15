@@ -33,34 +33,30 @@ public class WorkspaceManager {
     private void updatePomFile() throws IOException {
         File pomFile = new File(projectRoot, "pom.xml");
 
-        String currentJarName = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getName();
-
-        String expectedPath = "${project.basedir}/../" + currentJarName;
+        String currentVersion = "v" + plugin.getPluginMeta().getVersion();
 
         if (!pomFile.exists()) {
-            createInitialPom(pomFile, currentJarName);
+            createInitialPom(pomFile, currentVersion);
             return;
         }
 
         String content = Files.readString(pomFile.toPath());
-        Pattern pattern = Pattern.compile("(<artifactId>groovymc-api<\\/artifactId>[\\s\\S]*?<systemPath>)(.*?)(<\\/systemPath>)");
+
+        Pattern pattern = Pattern.compile("(<artifactId>GroovyMC</artifactId>[\\s\\S]*?<version>)(.*?)(</version>)");
         Matcher matcher = pattern.matcher(content);
 
         if (matcher.find()) {
-            String currentPathInFile = matcher.group(2).trim();
+            String existingVersion = matcher.group(2).trim();
 
-            if (!currentPathInFile.equals(expectedPath)) {
-                String newContent = matcher.replaceFirst("$1" + expectedPath + "$3");
+            if (!existingVersion.equals(currentVersion)) {
+                String newContent = matcher.replaceFirst("$1" + currentVersion + "$3");
                 Files.writeString(pomFile.toPath(), newContent, StandardOpenOption.TRUNCATE_EXISTING);
-                MessageView.log("Workspace: API path in pom.xml updated -> " + currentJarName);
+                MessageView.log("Workspace: API version in pom.xml updated -> " + currentVersion);
             }
         }
     }
 
-    private void createInitialPom(File pomFile, String currentJarName) throws IOException {
-        String userHelp = """
-                """;
-
+    private void createInitialPom(File pomFile, String version) throws IOException {
         String content = """
                 <project xmlns="http://maven.apache.org/POM/4.0.0"
                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -74,7 +70,19 @@ public class WorkspaceManager {
                     <properties>
                         <maven.compiler.source>21</maven.compiler.source>
                         <maven.compiler.target>21</maven.compiler.target>
+                        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
                     </properties>
+                
+                    <repositories>
+                        <repository>
+                            <id>papermc</id>
+                            <url>https://repo.papermc.io/repository/maven-public/</url>
+                        </repository>
+                        <repository>
+                            <id>jitpack.io</id>
+                            <url>https://jitpack.io</url>
+                        </repository>
+                    </repositories>
                 
                     <dependencies>
                         <dependency>
@@ -96,29 +104,19 @@ public class WorkspaceManager {
                         </dependency>
                 
                         <dependency>
-                            <groupId>me.groovymc</groupId>
-                            <artifactId>groovymc-api</artifactId>
-                            <version>1.0</version>
-                            <scope>system</scope>
-                            <systemPath>${project.basedir}/../%s</systemPath>
-                        </dependency>
-                
-                        %s
+                           <groupId>com.github.ktezin</groupId>
+                           <artifactId>GroovyMC</artifactId>
+                           <version>%s</version>
+                       </dependency>
                     </dependencies>
-                
-                    <repositories>
-                        <repository>
-                            <id>papermc</id>
-                            <url>https://repo.papermc.io/repository/maven-public/</url>
-                        </repository>
-                    </repositories>
                 
                     <build>
                         <sourceDirectory>modules</sourceDirectory>
                     </build>
                 </project>
-                """.formatted(currentJarName, userHelp);
+                """.formatted(version);
 
         Files.writeString(pomFile.toPath(), content, StandardOpenOption.CREATE);
+        MessageView.log("Workspace: Created initial pom.xml with API version " + version);
     }
 }
