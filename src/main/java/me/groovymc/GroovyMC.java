@@ -1,5 +1,6 @@
 package me.groovymc;
 
+import me.groovymc.core.UpdateChecker;
 import me.groovymc.core.module.ModuleManager;
 import me.groovymc.features.gui.GuiListener;
 import me.groovymc.core.workspace.WorkspaceManager;
@@ -21,6 +22,11 @@ public class GroovyMC extends JavaPlugin implements CommandExecutor {
     public void onEnable() {
         int pluginId = 28377;
         new Metrics(this, pluginId);
+
+        new UpdateChecker(this, "ktezin", "GroovyMC").check(version -> {
+            MessageView.log("Found a new version: " + version);
+            MessageView.log("Download it from: https://github.com/ktezin/GroovyMC/releases");
+        });
 
         dbManager = new DatabaseManager(this);
         this.moduleManager = new ModuleManager(this);
