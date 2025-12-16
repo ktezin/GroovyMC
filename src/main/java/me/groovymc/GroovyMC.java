@@ -5,6 +5,7 @@ import me.groovymc.features.gui.GuiListener;
 import me.groovymc.core.workspace.WorkspaceManager;
 import me.groovymc.features.db.DatabaseManager;
 import me.groovymc.view.MessageView;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,6 +19,9 @@ public class GroovyMC extends JavaPlugin implements CommandExecutor {
 
     @Override
     public void onEnable() {
+        int pluginId = 28377;
+        new Metrics(this, pluginId);
+
         dbManager = new DatabaseManager(this);
         this.moduleManager = new ModuleManager(this);
         this.workspaceManager = new WorkspaceManager(this);
