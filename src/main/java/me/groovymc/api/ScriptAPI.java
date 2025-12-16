@@ -1,7 +1,11 @@
 package me.groovymc.api;
 
+import groovy.lang.DelegatesTo;
 import groovy.lang.GroovyShell;
 import groovy.sql.Sql;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.FirstParam;
+import groovy.transform.stc.SimpleType;
 import me.groovymc.GroovyMC;
 import me.groovymc.core.module.ModuleConfig;
 import me.groovymc.core.module.ScriptModule;
@@ -121,7 +125,7 @@ public abstract class ScriptAPI extends Script {
 
         try {
             enableLogic.call();
-        } catch (Exception e){
+        } catch (Exception e) {
             MessageView.logScriptError(module.getName(), e);
         }
     }
@@ -134,7 +138,7 @@ public abstract class ScriptAPI extends Script {
 
         try {
             disableLogic.call();
-        } catch (Exception e){
+        } catch (Exception e) {
             MessageView.logScriptError(module.getName(), e);
         }
     }
@@ -146,7 +150,7 @@ public abstract class ScriptAPI extends Script {
      * @param action     The closure to execute when the event fires. The event object is passed as an argument.
      * @param <T>        The event type.
      */
-    public <T extends Event> void onEvent(Class<T> eventClass, Closure action) {
+    public <T extends Event> void onEvent(Class<T> eventClass, @ClosureParams(FirstParam.FirstGenericType.class) Closure action) {
         Listener listener = new Listener() {
         };
 
@@ -171,7 +175,7 @@ public abstract class ScriptAPI extends Script {
      * @param action The closure to execute when the command is run. parameters: (sender, args).
      * @return The created ScriptCommand object, allowing for method chaining (e.g., .tabComplete).
      */
-    public ScriptCommand command(String name, Closure action) {
+    public ScriptCommand command(String name, @ClosureParams(value = SimpleType.class, options = {"org.bukkit.command.CommandSender", "java.lang.String[]"}) Closure action) {
         ScriptCommand cmd = new ScriptCommand(name, module.getName(), action);
 
         commandRegistry.register(cmd);
@@ -325,7 +329,7 @@ public abstract class ScriptAPI extends Script {
      * @param action The closure to execute. Calling {@code cancel()} inside stops the task.
      * @return The task ID.
      */
-    public int repeat(long delay, long period, Closure action) {
+    public int repeat(long delay, long period, @DelegatesTo(value = BukkitRunnable.class, strategy = Closure.DELEGATE_FIRST) Closure action) {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
@@ -353,7 +357,7 @@ public abstract class ScriptAPI extends Script {
      * @param action The closure to execute.
      * @return The task ID.
      */
-    public int after(long delay, Closure action) {
+    public int after(long delay, @DelegatesTo(value = BukkitRunnable.class, strategy = Closure.DELEGATE_FIRST) Closure action) {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
@@ -392,7 +396,7 @@ public abstract class ScriptAPI extends Script {
      * @param player  The player to display the sidebar to.
      * @param closure The configuration closure (set 'title' and 'lines').
      */
-    public void sidebar(Player player, Closure closure) {
+    public void sidebar(Player player, @DelegatesTo(value = SidebarBuilder.SidebarConfig.class, strategy = Closure.DELEGATE_FIRST) Closure closure) {
         SidebarBuilder board = activeBoards.computeIfAbsent(player.getName(), k -> new SidebarBuilder(player, "Stats"));
 
         SidebarBuilder.SidebarConfig config = new SidebarBuilder.SidebarConfig();
@@ -432,7 +436,7 @@ public abstract class ScriptAPI extends Script {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 action.call();
-            } catch (Exception e){
+            } catch (Exception e) {
                 MessageView.logScriptError(module.getName(), e);
             }
         });
@@ -480,7 +484,7 @@ public abstract class ScriptAPI extends Script {
      * @param rows   The number of rows (1-6).
      * @param setup  The closure to configure items and clicks.
      */
-    public void gui(Player player, String title, int rows, Closure setup) {
+    public void gui(Player player, String title, int rows, @DelegatesTo(value = GuiBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure setup) {
         GuiHolder holder = new GuiHolder();
 
         Inventory inv = Bukkit.createInventory(holder, rows * 9, ChatUtils.color(title));
@@ -562,7 +566,7 @@ public abstract class ScriptAPI extends Script {
          * @param item   The item to place.
          * @param action The closure to run when clicked.
          */
-        public void slot(int slot, ItemStack item, Closure action) {
+        public void slot(int slot, ItemStack item, @ClosureParams(value = SimpleType.class, options = "org.bukkit.event.inventory.InventoryClickEvent") Closure action) {
             inv.setItem(slot, item);
             if (action != null) {
                 holder.setAction(slot, action);

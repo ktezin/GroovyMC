@@ -45,8 +45,8 @@ To install a module created by someone else:
 
 For more advanced features like Database connectivity, GUIs, Scoreboards, and Config management, please check the **examples** folder.
 
-* **[Browse Examples](./examples/README.md)**
-* **[Comprehensive Example Module](./examples/example_module/README.md)** (Recommended for learning)
+* **[Browse Examples](./examples)**
+* **[Comprehensive Example Module](./examples/example_module)** (Recommended for learning)
 
 ## Developer Note
 

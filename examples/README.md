@@ -6,7 +6,7 @@ Here you will find a collection of ready-to-use modules designed to demonstrate 
 
 ---
 
-## 🌟 Recommended Starting Point
+## Recommended Starting Point
 
 ### [example_module](./example_module)
 If you are new to GroovyMC, **start here!**
@@ -24,10 +24,10 @@ This is the comprehensive "All-in-One" showcase module. It is designed to cover 
 
 ## Available Modules
 
-| Module Name                                      | Description |
-|:-------------------------------------------------| :--- |
-| **[example_module](./example_module/README.md)** | The complete feature showcase. Best for learning the API syntax and structure. |
-| *(More examples coming soon...)*                 | *Specific examples for mechanics like custom items, minigames, etc.* |
+| Module Name                                     | Description |
+|:------------------------------------------------| :--- |
+| **[example_module](./example_module)**          | The complete feature showcase. Best for learning the API syntax and structure. |
+| *(More examples coming soon...)*                | *Specific examples for mechanics like custom items, minigames, etc.* |
 
 ---
 
